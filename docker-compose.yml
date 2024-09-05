@@ -1,0 +1,67 @@
+name: poems
+services:
+  poems-migrations:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migration
+    container_name: poems-migrations
+    hostname: poems-migrations
+    env_file:
+      - .env
+    networks:
+      - poems-net
+    depends_on:
+      poems-db:
+        condition: service_healthy
+        
+  poems-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: poems-web
+    hostname: poems-web
+    env_file:
+      - .env
+    volumes:
+      - ./src:/src
+    ports:
+      - "8000:8000"
+    networks:
+      - poems-net
+    depends_on:
+      poems-migrations:
+        condition: service_completed_successfully
+
+  #  poems-rabbitmq:
+  #    image: rabbitmq:3.9-management-alpine
+  #    container_name: poems-rabbitmq
+  #    hostname: poems-rabbitmq
+  #    env_file:
+  #      - .env
+  #    ports:
+  #      - "5672:5672"
+  #      - "15672:15672"
+  #    networks:
+  #      - poems-net
+
+  poems-db:
+    image: postgres:16-alpine
+    container_name: poems-db
+    hostname: poems-db
+    env_file:
+      - .env
+    ports:
+      - "15432:5432"
+    networks:
+      - poems-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" , "-h", "poems-db", "-d", "$$POSTGRES_DB", "-U", "$$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  poems-net:
+    driver: bridge

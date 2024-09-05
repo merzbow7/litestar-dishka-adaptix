@@ -1,0 +1,30 @@
+[importlinter]
+root_package = src
+
+[importlinter:contract:domain]
+name=Domain doesn't import anything
+type=forbidden
+source_modules=
+    src.domain
+forbidden_modules=
+    src.infrastructure
+    src.controllers
+    src.application
+
+[importlinter:contract:application]
+name=Applications does import only domain
+type=forbidden
+source_modules=
+    src.application
+forbidden_modules=
+    src.infrastructure
+    src.controllers
+
+
+[importlinter:contract:controllers]
+name=Applications does import only domain
+type=forbidden
+source_modules=
+    src.controllers
+forbidden_modules=
+    src.infrastructure
